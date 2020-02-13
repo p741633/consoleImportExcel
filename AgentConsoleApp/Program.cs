@@ -9,6 +9,7 @@ using System.Threading;
 using Konsole;
 using Console = Colorful.Console;
 using static AgentConsoleApp.ImportController;
+using System.Linq;
 
 namespace AgentConsoleApp
 {
@@ -56,14 +57,14 @@ namespace AgentConsoleApp
             if (args.Length == 0)
             {
                 // Display title
-                Console.Title = "TxtToDB 1.03";
+                Console.Title = "ExcelToDB 1.00";
 
                 // Display header
-                Console.WriteWithGradient(FiggleFonts.Banner.Render("txt to db"), Color.LightGreen, Color.ForestGreen, 16);
+                Console.WriteWithGradient(FiggleFonts.Banner.Render("excel to db"), Color.LightGreen, Color.ForestGreen, 16);
                 Console.ReplaceAllColorsWithDefaults();
 
                 // Display copyright
-                Console.WriteLine(" --------------- Created by PiriyaV ----------------\n", Color.LawnGreen);
+                Console.WriteLine(" ---------------------- Created by PiriyaV -----------------------\n", Color.LawnGreen);
 
                 Console.Write(@"Enter source path (eg: D:\folder) : ", Color.LightYellow);
                 sourceDirectory = Convert.ToString(Console.ReadLine());
@@ -80,16 +81,18 @@ namespace AgentConsoleApp
             try
             {
                 // Full path for txt
-                var FilePath = Directory.EnumerateFiles(sourceDirectory, "*.txt");
+                var FilePath = Directory.EnumerateFiles(sourceDirectory, "*.*", SearchOption.AllDirectories).Where(s => s.EndsWith(".xls") || s.EndsWith(".xlsx"));
 
                 // Count txt file
                 DirectoryInfo di = new DirectoryInfo(sourceDirectory);
-                int FileNum = di.GetFiles("*.txt").Length;
+                int FileNumXls = di.GetFiles("*.xls").Length;
+                int FileNumXlsx = di.GetFiles("*.xlsx").Length;
+                int FileNum = FileNumXls + FileNumXlsx;
 
                 // Throw no txt file
-                if (FileNum == 0)
+                if (FileNumXls == 0 && FileNumXlsx == 0)
                 {
-                    throw new ArgumentException("Text file not found in folder.");
+                    throw new ArgumentException("Excel file not found in folder.");
                 }
 
                 #region Validate Section
