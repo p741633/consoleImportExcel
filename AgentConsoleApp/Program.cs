@@ -8,7 +8,6 @@ using System.IO;
 using System.Threading;
 using Konsole;
 using Console = Colorful.Console;
-using static AgentConsoleApp.ImportController;
 using System.Linq;
 using ExcelDataReader;
 using System.Data;
@@ -31,8 +30,8 @@ namespace AgentConsoleApp
             List<returnModel> returnCollection = new List<returnModel>();
             string fileName = "";
             int counterFile = 1;
-            int counterFileValidate = 1;
             int counterLine;
+            int counterFileValidate = 1;
 
             #region Fancy header
             /*
@@ -77,11 +76,11 @@ namespace AgentConsoleApp
             string folderBackupPath = Path.Combine(sourceDirectory, folderBackup);
 
             // Initial values
-            int i = 0;
             int LineNum;
-            bool sheetChecker = true;
             string sheetName = "Sheet1";
             string TableName = "[SAPMM-WM]";
+            int i = 0;
+            bool sheetChecker = true;
 
             try
             {
@@ -99,6 +98,7 @@ namespace AgentConsoleApp
                 {
                     throw new ArgumentException("Excel file not found in folder.");
                 }
+
 
                 #region Validate Section
                 var pbValidate = new ProgressBar(PbStyle.DoubleLine, FileNum);
@@ -133,93 +133,64 @@ namespace AgentConsoleApp
                                 if (reader.Name == sheetName)
                                 {
                                     sheetChecker = false;
-                                    string columnStr;
-                                    DateTime columnDateTime;
                                     while (reader.Read())
                                     {
                                         if (i > 0)
                                         {
                                             int rowNO = i + 1;
 
-                                            #region Material Type
-                                            // Cast type
-                                            try
-                                            {
-                                                columnStr = Convert.ToString(reader.GetValue(1));
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                pbValidate.Refresh(counterFileValidate, "Validate failed.");
-                                                throw new ArgumentException($"{ex.Message}  At Column: B (Material Type), Row: {rowNO}");
-                                            }
-
-                                            // Validate length
-                                            if (columnStr.Length > 10)
-                                            {
-                                                pbValidate.Refresh(counterFileValidate, "Validate failed.");
-                                                throw new ArgumentException($"The field cannot contain more than 10 characters. At Column : B (Material Type), Row : {rowNO}");
-                                            }
-                                            #endregion
-
-                                            #region Material Type Description
-                                            // Cast type
-                                            try
-                                            {
-                                                columnStr = Convert.ToString(reader.GetValue(2));
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                pbValidate.Refresh(counterFileValidate, "Validate failed.");
-                                                throw new ArgumentException($"{ex.Message}  At Column: C (Material Type Description), Row: {rowNO}");
-                                            }
-
-                                            // Validate length
-                                            if (columnStr.Length > 255)
-                                            {
-                                                pbValidate.Refresh(counterFileValidate, "Validate failed.");
-                                                throw new ArgumentException($"The field cannot contain more than 255 characters. At Column : C (Material Type Description), Row : {rowNO}");
-                                            }
-                                            #endregion
-
-                                            #region Material Group
-                                            // Cast type
-                                            try
-                                            {
-                                                columnStr = Convert.ToString(reader.GetValue(3));
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                pbValidate.Refresh(counterFileValidate, "Validate failed.");
-                                                throw new ArgumentException($"{ex.Message}  At Column: D (Material Group), Row: {rowNO}");
-                                            }
-
-                                            // Validate length
-                                            if (columnStr.Length > 10)
-                                            {
-                                                pbValidate.Refresh(counterFileValidate, "Validate failed.");
-                                                throw new ArgumentException($"The field cannot contain more than 10 characters. At Column : D (Material Group), Row : {rowNO}");
-                                            }
-                                            #endregion
-
-                                            #region Matl Grp Desc.
-                                            // Cast type
-                                            try
-                                            {
-                                                columnStr = Convert.ToString(reader.GetValue(4));
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                pbValidate.Refresh(counterFileValidate, "Validate failed.");
-                                                throw new ArgumentException($"{ex.Message}  At Column: E (Matl Grp Desc.), Row: {rowNO}");
-                                            }
-
-                                            // Validate length
-                                            if (columnStr.Length > 255)
-                                            {
-                                                pbValidate.Refresh(counterFileValidate, "Validate failed.");
-                                                throw new ArgumentException($"The field cannot contain more than 255 characters. At Column : E (Matl Grp Desc.), Row : {rowNO}");
-                                            }
-                                            #endregion
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 1, 10, "B", "Material Type");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 2, 255, "C", "Material Type Description");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 3, 10, "D","Material Group");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 4, 255, "E", "Matl Grp Desc#");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 5, 12, "F", "Material");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 6, 255, "G", "Description");
+                                            ValidateDate(reader, pbValidate, rowNO, counterFileValidate, 7, "H", "Posting Date");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 8, 255, "I", "ได้รับมาจาก");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 9, 255, "J", "จ่ายไปให้");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 10, 10, "K", "Movement type");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 11, 255, "L", "Mvt Type Text");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 12, 100, "M", "Batch");
+                                            ValidateDate(reader, pbValidate, rowNO, counterFileValidate, 13, "N", "MFG Date");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 14, 100, "O", "Manufacturer Batch");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 15, 100, "P", "Manufacturer");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 16, 255, "Q", "Manufacturer Name");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 17, 100, "R", "Vendor");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 18, 255, "S", "Vendor Name");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 19, 20, "T", "Sold-to");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 20, 255, "U", "Sold-to Name");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 21, 255, "V", "Sold-to Address");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 22, 100, "W", "Sold-to Province");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 23, 20, "X", "Ship-to");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 24, 255, "Y", "Ship-to Name");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 25, 255, "Z", "Ship-to Address");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 26, 100, "AA", "Ship-to Province");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 27, 5, "AB", "Customer Group 1");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 28, 100, "AC", "Customer Group 1 - Desc#");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 29, 5, "AD", "Customer Group 2");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 30, 100, "AE", "Customer Group 2 - Desc#");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 31, 5, "AF", "Customer Group 3");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 32, 100, "AG", "Customer Group 3 - Desc#");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 33, 20, "AH", "FG material");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 34, 255, "AI", "FG Material Description");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 35, 100, "AJ", "FG Batch");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 36, 5, "AK", "Cost Center");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 37, 255, "AL", "Cost Center Description");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 38, 10, "AM", "Plant");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 39, 10, "AN", "Storage Loc#");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 40, 10, "AO", "Dest# Plant");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 41, 10, "AP", "Dest# Sloc");
+                                            ValidateFloat(reader, pbValidate, rowNO, counterFileValidate, 42, "AQ", "ยอดยกมา");
+                                            ValidateFloat(reader, pbValidate, rowNO, counterFileValidate, 43, "AR", "ปริมาณรับ");
+                                            ValidateFloat(reader, pbValidate, rowNO, counterFileValidate, 44, "AS", "ปริมาณจ่าย");
+                                            ValidateFloat(reader, pbValidate, rowNO, counterFileValidate, 45, "AT", "ปริมาณคงเหลือ");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 46, 20, "AU", "Unit");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 47, 255, "AV", "หมายเหตุ");
+                                            ValidateDate(reader, pbValidate, rowNO, counterFileValidate, 48, "AW", "Entered on");
+                                            ValidateDate(reader, pbValidate, rowNO, counterFileValidate, 49, "AX", "Entered at");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 50, 20,"AY", "Material Doc#");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 51, 10, "BZ", "Mat# Doc# Year");
+                                            ValidateString(reader, pbValidate, rowNO, counterFileValidate, 52, 5, "BA", "Mat# Doc#Item");
                                         }
                                     }
 
@@ -298,6 +269,12 @@ namespace AgentConsoleApp
                                             foreach (DataRow r in dt.Rows)
                                             {
                                                 r[c.ColumnName] = r[c.ColumnName].ToString().Trim();
+
+                                                // Convert empty string into NULL
+                                                if (r[c.ColumnName].ToString().Length == 0)
+                                                {
+                                                    r[c.ColumnName] = DBNull.Value;
+                                                }
                                             }
                                         }
                                     }
@@ -309,6 +286,55 @@ namespace AgentConsoleApp
                                         bc.ColumnMappings.Add(1, "[Material Type]");
                                         bc.ColumnMappings.Add(2, "[Material Type Description]");
                                         bc.ColumnMappings.Add(3, "[Material Group]");
+                                        bc.ColumnMappings.Add(4, "[Matl Grp Desc#]");
+                                        bc.ColumnMappings.Add(5, "[Material]");
+                                        bc.ColumnMappings.Add(6, "[Description]");
+                                        bc.ColumnMappings.Add(7, "[Posting Date]");
+                                        bc.ColumnMappings.Add(8, "[ได้รับมาจาก]");
+                                        bc.ColumnMappings.Add(9, "[จ่ายไปให้]");
+                                        bc.ColumnMappings.Add(10, "[Movement type]");
+                                        bc.ColumnMappings.Add(11, "[Mvt Type Text]");
+                                        bc.ColumnMappings.Add(12, "[Batch]");
+                                        bc.ColumnMappings.Add(13, "[MFG Date]");
+                                        bc.ColumnMappings.Add(14, "[Manufacturer Batch]");
+                                        bc.ColumnMappings.Add(15, "[Manufacturer]");
+                                        bc.ColumnMappings.Add(16, "[Manufacturer Name]");
+                                        bc.ColumnMappings.Add(17, "[Vendor]");
+                                        bc.ColumnMappings.Add(18, "[Vendor Name]");
+                                        bc.ColumnMappings.Add(19, "[Sold-to]");
+                                        bc.ColumnMappings.Add(20, "[Sold-to Name]");
+                                        bc.ColumnMappings.Add(21, "[Sold-to Address]");
+                                        bc.ColumnMappings.Add(22, "[Sold-to Province]");
+                                        bc.ColumnMappings.Add(23, "[Ship-to]");
+                                        bc.ColumnMappings.Add(24, "[Ship-to Name]");
+                                        bc.ColumnMappings.Add(25, "[Ship-to Address]");
+                                        bc.ColumnMappings.Add(26, "[Ship-to Province]");
+                                        bc.ColumnMappings.Add(27, "[Customer Group 1]");
+                                        bc.ColumnMappings.Add(28, "[Customer Group 1 - Desc#]");
+                                        bc.ColumnMappings.Add(29, "[Customer Group 2]");
+                                        bc.ColumnMappings.Add(30, "[Customer Group 2 - Desc#]");
+                                        bc.ColumnMappings.Add(31, "[Customer Group 3]");
+                                        bc.ColumnMappings.Add(32, "[Customer Group 3 - Desc#]");
+                                        bc.ColumnMappings.Add(33, "[FG material]");
+                                        bc.ColumnMappings.Add(34, "[FG Material Description]");
+                                        bc.ColumnMappings.Add(35, "[FG Batch]");
+                                        bc.ColumnMappings.Add(36, "[Cost Center]");
+                                        bc.ColumnMappings.Add(37, "[Cost Center Description]");
+                                        bc.ColumnMappings.Add(38, "[Plant]");
+                                        bc.ColumnMappings.Add(39, "[Storage Loc#]");
+                                        bc.ColumnMappings.Add(40, "[Dest# Plant]");
+                                        bc.ColumnMappings.Add(41, "[Dest# Sloc]");
+                                        bc.ColumnMappings.Add(42, "[ยอดยกมา]");
+                                        bc.ColumnMappings.Add(43, "[ปริมาณรับ]");
+                                        bc.ColumnMappings.Add(44, "[ปริมาณจ่าย]");
+                                        bc.ColumnMappings.Add(45, "[ปริมาณคงเหลือ]");
+                                        bc.ColumnMappings.Add(46, "[Unit]");
+                                        bc.ColumnMappings.Add(47, "[หมายเหตุ]");
+                                        bc.ColumnMappings.Add(48, "[Entered on]");
+                                        bc.ColumnMappings.Add(49, "[Entered at]");
+                                        bc.ColumnMappings.Add(50, "[Material Doc#]");
+                                        bc.ColumnMappings.Add(51, "[Mat# Doc# Year]");
+                                        bc.ColumnMappings.Add(52, "[Mat# Doc#Item]");
                                         bc.WriteToServer(dt);
                                     }
                                 }
@@ -382,6 +408,65 @@ namespace AgentConsoleApp
             // Wait key to terminate
             Console.Write("\nPress any key to close this window ");
             Console.ReadKey();
+        }
+
+        // Method Validate Float
+        public static void ValidateFloat(IExcelDataReader reader, ProgressBar pb, int rowNum, int fileCount, int columnNum, string columnXlsName, string columnName)
+        {
+            double columnFloat;
+
+            // Cast type
+            try
+            {
+                columnFloat = Convert.ToDouble(reader.GetValue(columnNum));
+            }
+            catch (Exception ex)
+            {
+                pb.Refresh(fileCount, "Validate failed.");
+                throw new ArgumentException($"{ex.Message}  At Column: {columnXlsName} ({columnName}), Row: {rowNum}");
+            }
+        }
+
+        // Method Validate Date
+        public static void ValidateDate(IExcelDataReader reader, ProgressBar pb, int rowNum, int fileCount, int columnNum, string columnXlsName, string columnName)
+        {
+            DateTime columnDate;
+
+            // Cast type
+            try
+            {
+                columnDate = Convert.ToDateTime(reader.GetValue(columnNum));
+            }
+            catch (Exception ex)
+            {
+                pb.Refresh(fileCount, "Validate failed.");
+                throw new ArgumentException($"{ex.Message}  At Column: {columnXlsName} ({columnName}), Row: {rowNum}");
+            }
+        }
+
+        // Method Validate String
+        public static void ValidateString(IExcelDataReader reader, ProgressBar pb, int rowNum, int fileCount, int columnNum, int strLength, string columnXlsName, string columnName)
+        {
+            string columnStr;
+
+            // Cast type
+            try
+            {
+                columnStr = Convert.ToString(reader.GetValue(columnNum));
+            }
+            catch (Exception ex)
+            {
+                pb.Refresh(fileCount, "Validate failed.");
+                throw new ArgumentException($"{ex.Message}  At Column: {columnXlsName} ({columnName}), Row: {rowNum}");
+            }
+
+            // Validate length
+            if (columnStr.Length > strLength)
+            {
+                pb.Refresh(fileCount, "Validate failed.");
+                throw new ArgumentException($"The field cannot contain more than {strLength} characters. At Column : {columnXlsName} ({columnName}), Row : {rowNum}");
+            }
+
         }
 
     }
