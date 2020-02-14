@@ -12,6 +12,7 @@ using static AgentConsoleApp.ImportController;
 using System.Linq;
 using ExcelDataReader;
 using System.Data;
+using System.Data.SqlClient;
 
 namespace AgentConsoleApp
 {
@@ -20,20 +21,14 @@ namespace AgentConsoleApp
         public class returnModel
         {
             public string FileName { get; set; }
-            public int HeaderNo { get; set; }
-            public int DetailNo { get; set; }
+            public int RowNo { get; set; }
         }
 
         static void Main(string[] args)
         {
             var conn = ConfigurationManager.AppSettings["DBConnectionString"].ToString();
             string sourceDirectory;
-            string line;
-            int detailLineNo, headerLineNo;
             List<returnModel> returnCollection = new List<returnModel>();
-            string FL_Filecode;
-            string FL_TotalRecord;
-            string HD_PoNo;
             string fileName = "";
             int counterFile = 1;
             int counterFileValidate = 1;
@@ -83,14 +78,15 @@ namespace AgentConsoleApp
 
             // Initial values
             int i = 0;
+            int LineNum;
             bool sheetChecker = true;
             string sheetName = "Sheet1";
-            string TableName = "SAPMM-WM";
+            string TableName = "[SAPMM-WM]";
 
             try
             {
                 // Full path for txt
-                var FilePath = Directory.EnumerateFiles(sourceDirectory, "*.*", SearchOption.AllDirectories).Where(s => s.ToLower().EndsWith(".xls") || s.ToLower().EndsWith(".xlsx"));
+                var FilePath = Directory.EnumerateFiles(sourceDirectory, "*.*", SearchOption.TopDirectoryOnly).Where(s => s.ToLower().EndsWith(".xls") || s.ToLower().EndsWith(".xlsx"));
 
                 // Count txt file
                 DirectoryInfo di = new DirectoryInfo(sourceDirectory);
@@ -256,20 +252,12 @@ namespace AgentConsoleApp
                 foreach (string currentFile in FilePath)
                 {
                     // Initial variable
-                    headerLineNo = 0;
-                    detailLineNo = 0;
+                    LineNum = 0;
                     counterLine = 1;
-                    FL_Filecode = "";
-                    FL_TotalRecord = "";
-                    HD_PoNo = "";
 
                     returnModel Model = new returnModel();
 
                     fileName = Path.GetFileName(currentFile);
-
-                    // Create progress bar (Each file)
-                    int LineNum = CountLinesReader(currentFile);
-                    var pbDetail = new ProgressBar(PbStyle.SingleLine, LineNum);
 
                     // Update progress bar (Overall)
                     pbOverall.Refresh(counterFile, "Importing, Please wait...");
@@ -299,6 +287,9 @@ namespace AgentConsoleApp
                                     // Convert to Datatable
                                     DataTable dt = result.Tables[sheetName];
 
+                                    // Row count
+                                    LineNum = dt.Rows.Count;
+
                                     // Sanitize data
                                     foreach (DataColumn c in dt.Columns)
                                     {
@@ -306,45 +297,50 @@ namespace AgentConsoleApp
                                         {
                                             foreach (DataRow r in dt.Rows)
                                             {
-                                                //try
-                                                //{
                                                 r[c.ColumnName] = r[c.ColumnName].ToString().Trim();
-                                                //}
-                                                //catch
-                                                //{ }
                                             }
                                         }
                                     }
+
+                                    using (SqlBulkCopy bc = new SqlBulkCopy(conn, SqlBulkCopyOptions.UseInternalTransaction | SqlBulkCopyOptions.TableLock))
+                                    {
+                                        bc.DestinationTableName = TableName;
+                                        bc.BatchSize = reader.RowCount;
+                                        bc.ColumnMappings.Add(1, "[Material Type]");
+                                        bc.ColumnMappings.Add(2, "[Material Type Description]");
+                                        bc.ColumnMappings.Add(3, "[Material Group]");
+                                        bc.WriteToServer(dt);
+                                    }
                                 }
                             } while (reader.NextResult());
-                        counterLine++;
+                            counterLine++;
+                        }
+
+                        // Create folder for file import successful
+                        if (!Directory.Exists(folderBackupPath))
+                        {
+                            Directory.CreateDirectory(folderBackupPath);
+                        }
+
+                        // Move file to folder backup
+                        string destFile = Path.Combine(folderBackupPath, fileName);
+                        File.Move(currentFile, destFile);
+
+                        // Add detail to model for showing in table
+                        Model.RowNo = LineNum;
+                        Model.FileName = fileName;
+                        returnCollection.Add(Model);
+
+                        // Change wording in progress bar
+                        if (counterFile == FileNum)
+                        {
+                            pbOverall.Refresh(counterFile, "Import finished.");
+                        }
+
+                        counterFile++;
                     }
-
-                    // Create folder for file import successful
-                    if (!Directory.Exists(folderBackupPath))
-                    {
-                        Directory.CreateDirectory(folderBackupPath);
-                    }
-
-                    // Move file to folder backup
-                    string destFile = Path.Combine(folderBackupPath, fileName);
-                    File.Move(currentFile, destFile);
-
-                    // Add detail to model for showing in table
-                    Model.HeaderNo = headerLineNo;
-                    Model.DetailNo = detailLineNo;
-                    Model.FileName = fileName;
-                    returnCollection.Add(Model);
-
-                    // Change wording in progress bar
-                    if (counterFile == FileNum)
-                    {
-                        pbOverall.Refresh(counterFile, "Import finished.");
-                    }
-
-                    counterFile++;
+                    #endregion
                 }
-                #endregion
             }
             catch (Exception ex)
             {
