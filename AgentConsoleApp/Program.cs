@@ -77,9 +77,11 @@ namespace AgentConsoleApp
 
             // Initial values
             int LineNum;
+            int ColumnNum;
             string sheetName = "Sheet1";
             string TableName = "[SAPMM-WM]";
             int i = 0;
+            int ColumnNumChecker = 53;
             bool sheetChecker = true;
 
             try
@@ -98,7 +100,6 @@ namespace AgentConsoleApp
                 {
                     throw new ArgumentException("Excel file not found in folder.");
                 }
-
 
                 #region Validate Section
                 var pbValidate = new ProgressBar(PbStyle.DoubleLine, FileNum);
@@ -224,6 +225,7 @@ namespace AgentConsoleApp
                 {
                     // Initial variable
                     LineNum = 0;
+                    ColumnNum = 0;
                     counterLine = 1;
 
                     returnModel Model = new returnModel();
@@ -260,6 +262,16 @@ namespace AgentConsoleApp
 
                                     // Row count
                                     LineNum = dt.Rows.Count;
+
+                                    // Column count
+                                    ColumnNum = dt.Columns.Count;
+
+                                    // Validate excel column
+                                    if (ColumnNum != ColumnNumChecker)
+                                    {
+                                        pbOverall.Refresh(counterFile, "Import error occured");
+                                        throw new ArgumentException($"Excel file must have {ColumnNumChecker} column!");
+                                    }
 
                                     // Sanitize data
                                     foreach (DataColumn c in dt.Columns)
