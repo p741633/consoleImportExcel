@@ -53,7 +53,7 @@ namespace AgentConsoleApp
             if (args.Length == 0)
             {
                 // Display title
-                Console.Title = "ExcelToDB 1.00";
+                Console.Title = "ExcelToDB 1.0.1";
 
                 // Display header
                 Console.WriteWithGradient(FiggleFonts.Banner.Render("excel to db"), Color.LightGreen, Color.ForestGreen, 16);
