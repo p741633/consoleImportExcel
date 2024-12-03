@@ -4,14 +4,14 @@ using System;
 using System.Drawing;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.IO;
 using System.Threading;
 using Konsole;
 using Console = Colorful.Console;
 using System.Linq;
 using ExcelDataReader;
-using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace AgentConsoleApp
 {

@@ -29,8 +29,8 @@
     <PackageReference Include="ExcelDataReader.DataSet" Version="3.7.0" />
     <PackageReference Include="Figgle" Version="0.5.1" />
     <PackageReference Include="Goblinfactory.Konsole" Version="6.2.2" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.0" />
   </ItemGroup>
 
