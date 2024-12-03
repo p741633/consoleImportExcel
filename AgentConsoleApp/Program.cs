@@ -17,7 +17,7 @@ namespace AgentConsoleApp
 {
     class Program
     {
-        public class returnModel
+        public class ReturnModel
         {
             public string FileName { get; set; }
             public int RowNo { get; set; }
@@ -27,7 +27,7 @@ namespace AgentConsoleApp
         {
             var conn = ConfigurationManager.AppSettings["DBConnectionString"].ToString();
             string sourceDirectory;
-            List<returnModel> returnCollection = new List<returnModel>();
+            List<ReturnModel> returnCollection = new List<ReturnModel>();
             string fileName = "";
             int counterFile = 1;
             int counterLine;
@@ -228,7 +228,7 @@ namespace AgentConsoleApp
                     ColumnNum = 0;
                     counterLine = 1;
 
-                    returnModel Model = new returnModel();
+                    ReturnModel Model = new ReturnModel();
 
                     fileName = Path.GetFileName(currentFile);
 
