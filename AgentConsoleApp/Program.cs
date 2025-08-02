@@ -249,10 +249,10 @@ namespace AgentConsoleApp
 
                         using (var reader = ExcelReaderFactory.CreateReader(stream))
                         {
-                            // Validation Excel file
-                            do
+                            if (reader.Name == sheetName)
                             {
-                                if (reader.Name == sheetName)
+                                // Validation Excel file
+                                do
                                 {
                                     // Read as DataSet
                                     var result = reader.AsDataSet(conf);
@@ -291,7 +291,9 @@ namespace AgentConsoleApp
                                         }
                                     }
 
-                                    using (SqlBulkCopy bc = new SqlBulkCopy(conn, SqlBulkCopyOptions.UseInternalTransaction | SqlBulkCopyOptions.TableLock))
+                                    using (SqlBulkCopy bc = new SqlBulkCopy(conn,
+                                               SqlBulkCopyOptions.UseInternalTransaction |
+                                               SqlBulkCopyOptions.TableLock))
                                     {
                                         bc.DestinationTableName = TableName;
                                         bc.BatchSize = reader.RowCount;
@@ -349,8 +351,10 @@ namespace AgentConsoleApp
                                         bc.ColumnMappings.Add(52, "[Mat# Doc#Item]");
                                         bc.WriteToServer(dt);
                                     }
-                                }
-                            } while (reader.NextResult());
+
+                                } while (reader.NextResult());
+                            }
+
                             counterLine++;
                         }
 
